@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Transfer Points Calculator by NVL</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    body {
+      text-align: center;
+      font-family: Arial, sans-serif;
+    }
+    table {
+      margin: 0 auto;
+      border-collapse: collapse;
+      width: 80%;
+    }
+    td, th {
+      padding: 8px;
+      text-align: left;
+    }
+    h3 a {
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h3>TRANSFER POINTS CALCULATOR (APPROXIMATE) BY NVL</h3>
+  <h3><a href="https://teachers2025.blogspot.com/" target="_blank">Teachers2025.blogspot.com</a></h3>
+
+  <form id="userForm" onsubmit="handleSubmit(event)">
+    <table>
+      <tbody>
+        <tr><td>Name of the teacher</td><td><input type="text" id="tName" required></td></tr>
+        <tr><td>Date of joining in the service</td><td><input type="date" id="oldDate" required></td><td><span id="result1"></span></td></tr>
+        <tr><td>Present working place category</td>
+          <td><select id="catagory" required>
+            <option value="">- select -</option>
+            <option value="1">I</option>
+            <option value="2">II</option>
+            <option value="3">III</option>
+            <option value="5">IV</option>
+          </select></td><td><span id="result2"></span></td>
+        </tr>
+        <tr><td>Date of joining in present school</td><td><input type="date" id="joinDate" required></td><td><span id="result23"></span></td></tr>
+        <tr><td>Are you claiming spouse?</td><td><select id="spouse" required>
+            <option value="0">- select -</option>
+            <option value="5">YES</option>
+            <option value="0">NO</option>
+          </select></td><td><span id="result4"></span></td>
+        </tr>
+        <tr><td>PHC %</td><td><select id="phc" required>
+            <option value="0">- select -</option>
+            <option value="0">NA</option>
+            <option value="5">Orthopedic 40%–55%</option>
+            <option value="5">Hearing 60–70 dB (51%–70%)</option>
+            <option value="7">Visually 40% disability</option>
+            <option value="7">Orthopedic 56%–69%</option>
+          </select></td><td><span id="result5"></span></td>
+        </tr>
+        <tr><td>Are you a Union Bearer?</td><td><select id="union" required>
+            <option value="0">- select -</option>
+            <option value="5">YES</option>
+            <option value="0">NO</option>
+          </select></td><td><span id="result6"></span></td>
+        </tr>
+        <tr><td>Are you affected by re-apportionment?</td><td><select id="reapprotionment" required>
+            <option value="0">- select -</option>
+            <option value="0">NO</option>
+            <option value="5">YES</option>
+            <option value="7">YES (2 times)</option>
+          </select></td><td><span id="result7"></span></td>
+        </tr>
+        <tr><td>Legally Separated Women<br><small>(Not applicable in case of remarriage)</small></td><td><select id="SeperatedWomen" required>
+            <option value="0">- select -</option>
+            <option value="5">YES</option>
+            <option value="0">NO</option>
+          </select></td><td><span id="result8"></span></td>
+        </tr>
+        <tr><td>Scouts and Guides Unit<br><small>(Active for past 2 years as of May 31st)</small></td><td><select id="Souts" required>
+            <option value="0">- select -</option>
+            <option value="5">YES</option>
+            <option value="0">NO</option>
+          </select></td><td><span id="result9"></span></td>
+        </tr>
+        <tr><td colspan="2"><h3 id="finalResult"></h3></td></tr>
+      </tbody>
+    </table>
+    <button type="submit" onclick="calculate()" id="submitBtn">Submit</button>
+  </form>
+
+  <script>
+    function getServiceDuration(startDateStr, endDateStr) {
+      const start = new Date(startDateStr);
+      const end = new Date(endDateStr);
+      const days = (end - start) / (1000 * 60 * 60 * 24);
+      return Number(((days * 0.5) / 365).toFixed(4));
+    }
+
+    function joiningDuration(startDateStr, endDateStr) {
+      const start = new Date(startDateStr);
+      const end = new Date(endDateStr);
+      return Math.floor((end - start) / (1000 * 60 * 60 * 24));
+    }
+
+    function calculate() {
+      const oldDate = document.getElementById('oldDate').value;
+      const joinDate = document.getElementById('joinDate').value;
+      const category = Number(document.getElementById("catagory").value);
+
+      const serviceDuration = getServiceDuration(oldDate, '2025-05-31');
+      document.getElementById('result1').innerText = serviceDuration;
+
+      const joinDays = joiningDuration(joinDate, '2025-05-31');
+      const result23 = (category / 365) * joinDays;
+      document.getElementById('result23').innerText = result23.toFixed(4);
+
+      const fields = ["spouse", "phc", "union", "reapprotionment", "SeperatedWomen", "Souts"];
+      let total = serviceDuration + result23;
+
+      fields.forEach((id, idx) => {
+        const val = Number(document.getElementById(id).value);
+        document.getElementById(`result${idx + 4}`).innerText = val;
+        total += val;
+      });
+
+      document.getElementById('finalResult').innerText = `Total Points: ${total.toFixed(4)}`;
+    }
+
+    function handleSubmit(event) {
+      event.preventDefault();
+      document.getElementById("submitBtn").replaceWith(document.createTextNode("Check with original GOs"));
+
+      const name = document.getElementById("tName").value;
+      setTimeout(() => {
+        html2pdf().set({
+          margin: 10,
+          filename: `${name}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        }).from(document.body).save();
+      }, 300);
+    }
+  </script>
+
+</body>
+</html>
